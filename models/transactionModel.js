@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import accountModel from './accountModel';
 import categoryModel from './categoryModel';
 import storeModel from './storeModel';
+import tagModel from './tagModel';
 
 const transactionSchema = mongoose.Schema({
   userId: String,
@@ -13,6 +14,7 @@ const transactionSchema = mongoose.Schema({
   effected: Boolean,
   category: categoryModel,
   store: storeModel,
+  tag: tagModel,
   inputAccount: accountModel,
   outputAccount: accountModel,
 });
