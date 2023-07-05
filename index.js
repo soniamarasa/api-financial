@@ -4,8 +4,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 
 //Routes
-import authRoutes from './routes/auth.routes';
-import userRoutes from './routes/user.routes';
+import authRoutes from './routes/auth.routes.js';
+import userRoutes from './routes/user.routes.js';
 
 dotenv.config();
 const app = express();
@@ -18,15 +18,9 @@ app.use(express.json());
 
 const { DB_CONNECTION } = process.env;
 
-mongoose.connect(
-  DB_CONNECTION,
-  { useNewUrlParser: true, useUnifiedTopology: true },
-  (error) => {
-    if (error) {
-      console.error('Erro na conexão MongoDB' + error);
-    }
-  }
-);
+mongoose
+  .connect(DB_CONNECTION, { useNewUrlParser: true, useUnifiedTopology: true })
+  .catch((error) => console.error('Erro na conexão MongoDB' + error));
 
 mongoose.connection.once('open', () => {
   console.log('Conectado ao MongoDB');
@@ -38,4 +32,4 @@ mongoose.connection.once('open', () => {
 
 app.use('/api', authRoutes);
 app.use('/api', userRoutes);
-app.use('/api', accountsRouter);
+// app.use('/api', accountsRouter);

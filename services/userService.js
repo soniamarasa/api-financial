@@ -12,31 +12,32 @@ const createAccount = async (req, res) => {
     email: Yup.string().email().required(),
     password: Yup.string().required().min(8),
     name: Yup.string().required(),
+    username: Yup.string().required(),
     birthdate: Yup.date().required(),
     gender: Yup.string().required(),
-    imgUrl: Yup.string(),
+    // imgUrl: Yup.string(),
   });
 
   if (!(await schema.isValid(req.body)))
-    return res.status(400).json({ error: 'Validation failed.' });
+    return res
+      .status(400)
+      .json({ error: 'Verifique as informações inseridas!' });
 
   const userExists = await userModel.findOne({
     email,
   });
 
-  if (userExists)
-    return res.status(400).json({ error: 'User already exists.' });
+  if (userExists) return res.status(400).json({ error: 'Usuário já existe!' });
 
   req.body.password = await bcrypt.hash(password, 8);
 
   try {
-    const { id, name, email, gender, birthdate } = await userModel.create(
-      req.body
-    );
-    return res.json({ id, name, email, gender, birthdate });
+    const { id, name, email, gender, birthdate, username } =
+      await userModel.create(req.body);
+    return res.json({ id, name, email, gender, birthdate, username });
   } catch (error) {
     console.log(error);
-    return res.status(400).json({ error: 'Unable to create your account.' });
+    return res.status(400).json({ error: 'Não foi possível criar sua conta.' });
   }
 };
 
@@ -49,19 +50,22 @@ const login = async (req, res) => {
   });
 
   if (!(await schema.isValid(req.body)))
-    return res.status(400).json({ error: 'Validation failed.' });
+    return res
+      .status(400)
+      .json({ error: 'Verifique as informações inseridas!' });
 
   const userExists = await userModel.findOne({
     email,
   });
 
   if (!userExists)
-    return res.status(400).json({ error: 'User does not exist.' });
+    return res.status(400).json({ error: 'Usuário não existe!' });
   else {
     const checkPassword = await bcrypt.compare(password, userExists.password);
 
     if (checkPassword) {
-      const { _id, email, name, gender, birthdate, password } = userExists;
+      const { _id, email, name, gender, birthdate, username, password } =
+        userExists;
       return res.json({
         user: {
           id: _id,
@@ -69,13 +73,14 @@ const login = async (req, res) => {
           email,
           gender,
           birthdate,
+          username,
           token: jwt.sign({ _id }, process.env.SECRET, {
             expiresIn: process.env.EXPIRESIN,
           }),
         },
       });
     } else {
-      return res.status(400).json({ error: 'Incorrect password.' });
+      return res.status(400).json({ error: 'Senha incorreta!' });
     }
   }
 };
@@ -88,7 +93,7 @@ const logout = async (req, res) => {
   });
 
   if (!userExists)
-    return res.status(400).json({ error: 'User does not exist.' });
+    return res.status(400).json({ error: 'Usuário não existe!' });
   else {
     return res.json({
       user: null,
@@ -107,7 +112,7 @@ const getUser = async (req, res) => {
 
     res.send(user);
   } catch (error) {
-    res.send(500).send({ message: 'User not found' + error });
+    res.send(500).send({ message: 'Usuário não encontrado' + error });
   }
 };
 
@@ -124,7 +129,7 @@ const updateUser = async (req, res) => {
   } = req.body;
   const { id } = req.params;
 
-  if (!id) return res.status(400).json({ error: 'Invalid id field' });
+  if (!id) return res.status(400).json({ error: 'Id inválido!' });
 
   const schema = Yup.object().shape({
     name: Yup.string(),
@@ -144,14 +149,16 @@ const updateUser = async (req, res) => {
   });
 
   if (!(await schema.isValid(req.body)))
-    return res.status(400).json({ error: 'Validation failed.' });
+    return res
+      .status(400)
+      .json({ error: 'Verifique as informações inseridas!' });
 
   const userExists = await userModel.findById({
     _id: id,
   });
 
   if (!userExists)
-    return res.status(400).json({ error: 'User does not exist.' });
+    return res.status(400).json({ error: 'Usuário não existe!' });
   else {
     if (email !== userExists.email) {
       const emailExists = await userModel.findOne({
@@ -159,7 +166,7 @@ const updateUser = async (req, res) => {
       });
 
       if (emailExists)
-        return res.status(400).json({ error: 'E-mail already registered!' });
+        return res.status(400).json({ error: 'E-mail já registrado!' });
     }
 
     if (oldPassword) {
@@ -168,11 +175,11 @@ const updateUser = async (req, res) => {
         userExists.password
       );
       if (!checkPassword)
-        return res.status(400).json({ error: 'Incorrect password.' });
+        return res.status(400).json({ error: 'Senha incorreta!' });
     }
 
     if (password && confirmPassword && password !== confirmPassword) {
-      return res.status(400).json({ error: 'Passwords do not match.' });
+      return res.status(400).json({ error: 'Senha atual não confere!' });
     }
 
     if (password) req.body.password = await bcrypt.hash(password, 8);
@@ -206,14 +213,16 @@ const recoverPassword = async (req, res) => {
   });
 
   if (!(await schema.isValid(req.body)))
-    return res.status(400).json({ error: 'Validation failed.' });
+    return res
+      .status(400)
+      .json({ error: 'Verifique as informações inseridas!' });
 
   const userExists = await userModel.findOne({
     email,
   });
 
   if (!userExists)
-    return res.status(400).json({ error: 'User does not exist.' });
+    return res.status(400).json({ error: 'Usuário não existe!' });
   else {
     let token = jwt.sign({ _id: userExists._id }, process.env.SECRET, {
       expiresIn: '2h',
@@ -228,7 +237,8 @@ const recoverPassword = async (req, res) => {
     );
 
     return res.json({
-      message: 'The link to reset a new password has been sent to your email.',
+      message:
+        'O link para redefinir uma nova senha foi enviado para o seu e-mail.',
     });
   }
 };
@@ -242,14 +252,16 @@ const resetPassword = async (req, res) => {
   });
 
   if (!(await schema.isValid(req.body)))
-    return res.status(400).json({ error: 'Validation failed.' });
+    return res
+      .status(400)
+      .json({ error: 'Verifique as informações inseridas!' });
 
   const userExists = await userModel.findById({
     _id: userId,
   });
 
   if (!userExists)
-    return res.status(400).json({ error: 'User does not exist.' });
+    return res.status(400).json({ error: 'Usuário não existe!' });
   else {
     req.body.password = await bcrypt.hash(password, 8);
 
@@ -267,7 +279,7 @@ const resetPassword = async (req, res) => {
       },
       userUpdated
     );
-    return res.json({ message: 'Password changed successfully!' });
+    return res.json({ message: 'Senha alterada com sucesso!' });
   }
 };
 
@@ -275,13 +287,15 @@ const authorization = async (req, res, next) => {
   const token = req.headers['authorization'];
 
   if (!token)
-    return res.status(401).json({ auth: false, message: 'No token provided.' });
+    return res
+      .status(401)
+      .json({ auth: false, message: 'Nenhum token fornecido.' });
 
   jwt.verify(token, process.env.SECRET, function (err, decoded) {
     if (err)
       return res
         .status(401)
-        .json({ auth: false, message: 'Failed to authenticate token.' });
+        .json({ auth: false, message: 'Falha ao autenticar o token.' });
 
     req.userId = decoded._id;
     next();
