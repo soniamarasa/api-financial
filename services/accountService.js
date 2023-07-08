@@ -1,15 +1,15 @@
 import accountModel from '../models/accountModel.js';
 
-const accounts = async (req, res) => {
-  const userId = req.params.userId;
+const getAccounts = async (req, res) => {
+  const userId = req.userId;
   try {
-    const getAccounts = await accountModel.find({
+    const accounts = await accountModel.find({
       userId: userId,
     });
-    res.send(getAccounts);
+    res.send(accounts);
   } catch (error) {
     res.send(500).send({
-      message: 'An error occurred while searching for accounts.' + error,
+      message: 'Ocorreu um erro ao pesquisar as contas.' + error,
     });
   }
 };
@@ -18,19 +18,22 @@ const newAccount = async (req, res) => {
   const accountBody = req.body;
 
   let account = new accountModel(accountBody);
+  account.userId = req.userId;
 
   try {
     await account.save();
     res.send(account);
   } catch (error) {
     res.status(500).send({
-      message: 'An error occurred while creating the account.' + error,
+      message:
+        'Um erro ocorreu ao criar a conta. Tente novamente mais tarde.' +
+        error,
     });
   }
 };
 
-const editAccount = async (req, res) => {
-  const userId = req.params.userId;
+const updateAccount = async (req, res) => {
+  const userId = req.userId;
   const id = req.params.id;
   const accountBody = req.body;
 
@@ -40,9 +43,9 @@ const editAccount = async (req, res) => {
     });
 
     if (item.userId !== userId) {
-      return res
-        .status(500)
-        .send({ message: 'You do not have permission to edit this item.' });
+      return res.status(500).send({
+        message: 'Você nao tem permissão para editar essa conta.',
+      });
     }
 
     const updatedAccount = await accountModel.findByIdAndUpdate(
@@ -57,16 +60,51 @@ const editAccount = async (req, res) => {
 
     if (!updatedAccount) {
       res.send({
-        message: 'Account not found.',
+        message: 'Conta não encontrada',
       });
     } else {
       res.send(updatedAccount);
     }
   } catch (error) {
     res.status(500).send({
-      message: 'An error occurred while editing the account.' + error,
+      message:
+        'Um erro ocorreu ao atualizar a conta. Tente novamente mais tarde.' +
+        error,
     });
   }
 };
 
-export { accounts, newAccount, editAccount };
+const deleteAccount = async (req, res) => {
+  const id = req.params.id;
+  const userId = req.userId;
+
+  try {
+    const account = await accountModel.findById({
+      _id: id,
+    });
+    if (account.userId !== userId) {
+      return res.status(500).send({
+        message: 'Você não tem permissão para deletar essa conta.',
+      });
+    }
+
+    const dataId = await accountModel.findByIdAndRemove({
+      _id: id,
+    });
+    if (!dataId) {
+      res.send({
+        message: 'Conta não encontrada.',
+      });
+    } else {
+      res.send({ message: 'Conta deletada com sucesso!' });
+    }
+  } catch (error) {
+    res.status(500).send({
+      message:
+        'Um erro ocorreu ao deletar a conta. Tente novamente mais tarde.' +
+        error,
+    });
+  }
+};
+
+export { getAccounts, newAccount, updateAccount, deleteAccount };

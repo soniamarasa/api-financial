@@ -1,15 +1,15 @@
 import categoryModel from '../models/categoryModel.js';
 
-const categories = async (req, res) => {
-  const userId = req.params.userId;
+const getCategories = async (req, res) => {
+  const userId = req.userId;
   try {
-    const getCategories = await categoryModel.find({
+    const categories = await categoryModel.find({
       userId: userId,
     });
-    res.send(getCategories);
+    res.send(categories);
   } catch (error) {
     res.send(500).send({
-      message: 'An error occurred while searching for categories.' + error,
+      message: 'Ocorreu um erro ao pesquisar as categorias.' + error,
     });
   }
 };
@@ -18,19 +18,22 @@ const newCategory = async (req, res) => {
   const categoryBody = req.body;
 
   let category = new categoryModel(categoryBody);
+  category.userId = req.userId;
 
   try {
     await category.save();
     res.send(category);
   } catch (error) {
     res.status(500).send({
-      message: 'An error occurred while creating the category.' + error,
+      message:
+        'Um erro ocorreu ao criar a categoria. Tente novamente mais tarde.' +
+        error,
     });
   }
 };
 
-const editCategory = async (req, res) => {
-  const userId = req.params.userId;
+const updateCategory = async (req, res) => {
+  const userId = req.userId;
   const id = req.params.id;
   const categoryBody = req.body;
 
@@ -40,9 +43,9 @@ const editCategory = async (req, res) => {
     });
 
     if (item.userId !== userId) {
-      return res
-        .status(500)
-        .send({ message: 'You do not have permission to edit this item.' });
+      return res.status(500).send({
+        message: 'Você nao tem permissão para editar essa categoria.',
+      });
     }
 
     const updatedCategory = await categoryModel.findByIdAndUpdate(
@@ -57,21 +60,23 @@ const editCategory = async (req, res) => {
 
     if (!updatedCategory) {
       res.send({
-        message: 'Category not found.',
+        message: 'Categoria não encontrada',
       });
     } else {
       res.send(updatedCategory);
     }
   } catch (error) {
     res.status(500).send({
-      message: 'An error occurred while editing the category.' + error,
+      message:
+        'Um erro ocorreu ao atualizar a categoria. Tente novamente mais tarde.' +
+        error,
     });
   }
 };
 
 const deleteCategory = async (req, res) => {
   const id = req.params.id;
-  const userId = req.params.userId;
+  const userId = req.userId;
 
   try {
     const category = await categoryModel.findById({
@@ -79,7 +84,7 @@ const deleteCategory = async (req, res) => {
     });
     if (category.userId !== userId) {
       return res.status(500).send({
-        message: "You don't have permission to delete this category.",
+        message: 'Você não tem permissão para deletar essa categoria.',
       });
     }
 
@@ -88,16 +93,18 @@ const deleteCategory = async (req, res) => {
     });
     if (!dataId) {
       res.send({
-        message: 'Category not found.',
+        message: 'Categoria não encontrada.',
       });
     } else {
-      res.send({ message: 'Successfully deleted category!' });
+      res.send({ message: 'Categoria deletada com sucesso!' });
     }
   } catch (error) {
     res.status(500).send({
-      message: 'An error occurred while deleting the category.' + error,
+      message:
+        'Um erro ocorreu ao deletar a categoria. Tente novamente mais tarde.' +
+        error,
     });
   }
 };
 
-export { categories, newCategory, editCategory, deleteCategory };
+export { getCategories, newCategory, updateCategory, deleteCategory };

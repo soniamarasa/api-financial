@@ -1,15 +1,15 @@
-import cardModel from '../models/cardModel';
+import cardModel from '../models/cardModel.js';
 
-const cards = async (req, res) => {
-  const userId = req.params.userId;
+const getCards = async (req, res) => {
+  const userId = req.userId;
   try {
-    const getCards = await cardModel.find({
+    const cards = await cardModel.find({
       userId: userId,
     });
-    res.send(getCards);
+    res.send(cards);
   } catch (error) {
     res.send(500).send({
-      message: 'An error occurred while searching for cards.' + error,
+      message: 'Ocorreu um erro ao pesquisar os cartões.' + error,
     });
   }
 };
@@ -18,31 +18,34 @@ const newCard = async (req, res) => {
   const cardBody = req.body;
 
   let card = new cardModel(cardBody);
+  card.userId = req.userId;
 
   try {
     await card.save();
     res.send(card);
   } catch (error) {
     res.status(500).send({
-      message: 'An error occurred while creating the card.' + error,
+      message:
+        'Um erro ocorreu ao criar o cartão. Tente novamente mais tarde.' +
+        error,
     });
   }
 };
 
-const editCard = async (req, res) => {
-  const userId = req.params.userId;
+const updateCard = async (req, res) => {
+  const userId = req.userId;
   const id = req.params.id;
   const cardBody = req.body;
 
   try {
-    const card = await cardModel.findById({
+    const item = await cardModel.findById({
       _id: id,
     });
 
-    if (card.userId !== userId) {
-      return res
-        .status(500)
-        .send({ message: 'You do not have permission to edit this card.' });
+    if (item.userId !== userId) {
+      return res.status(500).send({
+        message: 'Você nao tem permissão para editar esse cartão.',
+      });
     }
 
     const updatedCard = await cardModel.findByIdAndUpdate(
@@ -57,21 +60,23 @@ const editCard = async (req, res) => {
 
     if (!updatedCard) {
       res.send({
-        message: 'Card not found.',
+        message: 'Cartão não encontrado',
       });
     } else {
       res.send(updatedCard);
     }
   } catch (error) {
     res.status(500).send({
-      message: 'An error occurred while editing the card.' + error,
+      message:
+        'Um erro ocorreu ao atualizar o cartão. Tente novamente mais tarde.' +
+        error,
     });
   }
 };
 
 const deleteCard = async (req, res) => {
   const id = req.params.id;
-  const userId = req.params.userId;
+  const userId = req.userId;
 
   try {
     const card = await cardModel.findById({
@@ -79,7 +84,7 @@ const deleteCard = async (req, res) => {
     });
     if (card.userId !== userId) {
       return res.status(500).send({
-        message: "You don't have permission to delete this card.",
+        message: 'Você não tem permissão para deletar esse cartão.',
       });
     }
 
@@ -88,16 +93,18 @@ const deleteCard = async (req, res) => {
     });
     if (!dataId) {
       res.send({
-        message: 'Card not found.',
+        message: 'Cartão não encontrado.',
       });
     } else {
-      res.send({ message: 'Successfully deleted card!' });
+      res.send({ message: 'Cartão deletado com sucesso!' });
     }
   } catch (error) {
-    res
-      .status(500)
-      .send({ message: 'An error occurred while deleting the card.' + error });
+    res.status(500).send({
+      message:
+        'Um erro ocorreu ao deletar o cartão. Tente novamente mais tarde.' +
+        error,
+    });
   }
 };
 
-export { cards, newCard, editCard, deleteCard };
+export { getCards, newCard, updateCard, deleteCard };

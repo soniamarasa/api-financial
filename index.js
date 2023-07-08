@@ -6,6 +6,11 @@ import dotenv from 'dotenv';
 //Routes
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
+import categoriesRouter from './routes/categories.routes.js';
+import tagsRouter from './routes/tags.routes.js';
+import storesRouter from './routes/stores.routes.js';
+import cardTransactionModel from './models/cardTransaction.js';
+import transactionsRouter from './routes/transactions.routes.js';
 
 dotenv.config();
 const app = express();
@@ -32,4 +37,9 @@ mongoose.connection.once('open', () => {
 
 app.use('/api', authRoutes);
 app.use('/api', userRoutes);
-// app.use('/api', accountsRouter);
+app.use('/api', accountsRouter);
+app.use('/api', cardsRouter);
+app.use('/api', categoriesRouter);
+app.use('/api', tagsRouter);
+app.use('/api', storesRouter);
+app.use('/api', transactionsRouter);

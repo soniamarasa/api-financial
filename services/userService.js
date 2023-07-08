@@ -298,6 +298,7 @@ const authorization = async (req, res, next) => {
         .json({ auth: false, message: 'Falha ao autenticar o token.' });
 
     req.userId = decoded._id;
+
     next();
   });
 };
