@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import flagModel from './flagModel';
+import flagModel from './flagModel.js';
 
 const cardSchema = mongoose.Schema({
   userId: String,
@@ -7,7 +7,10 @@ const cardSchema = mongoose.Schema({
   dueDate: Date,
   closingDate: Date,
   accountId: String,
-  flag: flagModel,
+  flag: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: flagModel,
+  },
   limit: Number,
 });
 

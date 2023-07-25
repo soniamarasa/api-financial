@@ -2,8 +2,9 @@ import storeModel from '../models/storeModel.js';
 
 const getStores = async (req, res) => {
   const userId = req.userId;
+
   try {
-    const stores = await storeModel.find({
+    let stores = await storeModel.find({
       userId: userId,
     });
     res.send(stores);
@@ -22,12 +23,15 @@ const newStore = async (req, res) => {
 
   try {
     await store.save();
+    store = {
+      store,
+      message: `Loja criada com sucesso!`,
+    };
     res.send(store);
   } catch (error) {
     res.status(500).send({
       message:
-        'Um erro ocorreu ao criar a loja. Tente novamente mais tarde.' +
-        error,
+        'Um erro ocorreu ao criar a loja. Tente novamente mais tarde.' + error,
     });
   }
 };
@@ -48,7 +52,7 @@ const updateStore = async (req, res) => {
       });
     }
 
-    const updatedStore = await storeModel.findByIdAndUpdate(
+    let store = await storeModel.findByIdAndUpdate(
       {
         _id: id,
       },
@@ -58,12 +62,16 @@ const updateStore = async (req, res) => {
       }
     );
 
-    if (!updatedStore) {
+    if (!store) {
       res.send({
         message: 'Loja não encontrada',
       });
     } else {
-      res.send(updatedStore);
+      store = {
+        store,
+        message: `Loja atualizada com sucesso!`,
+      };
+      res.send(store);
     }
   } catch (error) {
     res.status(500).send({

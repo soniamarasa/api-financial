@@ -1,11 +1,14 @@
 import categoryModel from '../models/categoryModel.js';
 
 const getCategories = async (req, res) => {
+  const type = !req.query.type ? 1 : req.query.type;
   const userId = req.userId;
+  
   try {
-    const categories = await categoryModel.find({
+    let categories = await categoryModel.find({
       userId: userId,
-    });
+      type: type
+    })
     res.send(categories);
   } catch (error) {
     res.send(500).send({
@@ -22,6 +25,10 @@ const newCategory = async (req, res) => {
 
   try {
     await category.save();
+    category = {
+      category,
+      message: `Categoria criada com sucesso!`,
+    };
     res.send(category);
   } catch (error) {
     res.status(500).send({
@@ -48,7 +55,7 @@ const updateCategory = async (req, res) => {
       });
     }
 
-    const updatedCategory = await categoryModel.findByIdAndUpdate(
+    let category = await categoryModel.findByIdAndUpdate(
       {
         _id: id,
       },
@@ -58,12 +65,16 @@ const updateCategory = async (req, res) => {
       }
     );
 
-    if (!updatedCategory) {
+    if (!category) {
       res.send({
         message: 'Categoria não encontrada',
       });
     } else {
-      res.send(updatedCategory);
+      category = {
+        category,
+        message: `Categoria atualizada com sucesso!`,
+      };
+      res.send(category);
     }
   } catch (error) {
     res.status(500).send({

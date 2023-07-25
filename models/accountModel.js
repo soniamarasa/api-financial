@@ -3,11 +3,11 @@ import mongoose from 'mongoose';
 const accountSchema = mongoose.Schema({
   userId: String,
   name: String,
+  openingBalance: Number,
   currentBalance: Number,
-  expectedBalance: Number,
-  icon: String,
+  forecastBalance: Number,
   color: String,
-  type: Number,
+  type: Object,
 });
 
 const accountModel = mongoose.model('account', accountSchema);

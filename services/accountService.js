@@ -2,8 +2,9 @@ import accountModel from '../models/accountModel.js';
 
 const getAccounts = async (req, res) => {
   const userId = req.userId;
+
   try {
-    const accounts = await accountModel.find({
+    let accounts = await accountModel.find({
       userId: userId,
     });
     res.send(accounts);
@@ -22,12 +23,15 @@ const newAccount = async (req, res) => {
 
   try {
     await account.save();
+    account = {
+      account,
+      message: `Conta criada com sucesso!`,
+    };
     res.send(account);
   } catch (error) {
     res.status(500).send({
       message:
-        'Um erro ocorreu ao criar a conta. Tente novamente mais tarde.' +
-        error,
+        'Um erro ocorreu ao criar a conta. Tente novamente mais tarde.' + error,
     });
   }
 };
@@ -48,7 +52,7 @@ const updateAccount = async (req, res) => {
       });
     }
 
-    const updatedAccount = await accountModel.findByIdAndUpdate(
+    let account = await accountModel.findByIdAndUpdate(
       {
         _id: id,
       },
@@ -58,12 +62,16 @@ const updateAccount = async (req, res) => {
       }
     );
 
-    if (!updatedAccount) {
+    if (!account) {
       res.send({
         message: 'Conta não encontrada',
       });
     } else {
-      res.send(updatedAccount);
+      account = {
+        account,
+        message: `Conta atualizada com sucesso!`,
+      };
+      res.send(account);
     }
   } catch (error) {
     res.status(500).send({
